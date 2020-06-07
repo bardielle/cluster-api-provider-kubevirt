@@ -25,6 +25,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog"
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 
 	"github.com/kubevirt/cluster-api-provider-kubevirt/pkg/managers/vm"
 )
@@ -42,6 +43,12 @@ const (
 type Actuator struct {
 	eventRecorder record.EventRecorder
 	providerVM    vm.ProviderVM
+}
+
+func writeLog(msg string) {
+	log := logf.Log.WithName("kubevirt-controller-manager")
+	entryLog := log.WithName("VMs")
+	entryLog.Info("@@@@@@@@@@@@@@@@ " + msg)
 }
 
 // New returns an actuator.
@@ -65,7 +72,10 @@ func (a *Actuator) handleMachineError(machine *machinev1.Machine, err error, eve
 // Create creates a machine and is invoked by the machine controller.
 func (a *Actuator) Create(ctx context.Context, machine *machinev1.Machine) error {
 	klog.Infof("%s: actuator creating machine", vm.GetMachineName(machine))
-
+	writeLog("Create was called for machine " + machine.Name)
+	if strings.Contains(machine.GetName(), "narg") {
+		return nil
+	}
 	if err := a.providerVM.Create(machine); err != nil {
 		fmtErr := fmt.Errorf(vmsFailFmt, vm.GetMachineName(machine), createEventAction, err)
 		return a.handleMachineError(machine, fmtErr, createEventAction)
@@ -80,6 +90,11 @@ func (a *Actuator) Create(ctx context.Context, machine *machinev1.Machine) error
 func (a *Actuator) Exists(ctx context.Context, machine *machinev1.Machine) (bool, error) {
 	klog.Infof("%s: actuator checking if machine exists", vm.GetMachineName(machine))
 
+	if strings.Contains(machine.GetName(), "narg") {
+		return true, nil
+	}
+
+	writeLog("Exists was called for machine " + machine.Name)
 	return a.providerVM.Exists(machine)
 }
 
@@ -90,9 +105,9 @@ func (a *Actuator) Update(ctx context.Context, machine *machinev1.Machine) error
 	if strings.Contains(machine.GetName(), "narg") {
 		return nil
 	}
+	writeLog("Update was called for machine " + machine.Name)
 	wasUpdated, err := a.providerVM.Update(machine)
 	if err != nil {
-
 		fmtErr := fmt.Errorf(vmsFailFmt, vm.GetMachineName(machine), updateEventAction, err)
 		return a.handleMachineError(machine, fmtErr, updateEventAction)
 	}
@@ -109,6 +124,10 @@ func (a *Actuator) Update(ctx context.Context, machine *machinev1.Machine) error
 func (a *Actuator) Delete(ctx context.Context, machine *machinev1.Machine) error {
 	klog.Infof("%s: actuator deleting machine", vm.GetMachineName(machine))
 
+	if strings.Contains(machine.GetName(), "narg") {
+		return nil
+	}
+	writeLog("Delete was called for machine " + machine.Name)
 	if err := a.providerVM.Delete(machine); err != nil {
 		fmtErr := fmt.Errorf(vmsFailFmt, vm.GetMachineName(machine), deleteEventAction, err)
 		return a.handleMachineError(machine, fmtErr, deleteEventAction)

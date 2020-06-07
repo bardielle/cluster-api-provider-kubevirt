@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/kubevirt/cluster-api-provider-kubevirt/pkg/clients/underkube"
@@ -17,8 +19,15 @@ import (
 	kubevirtapiv1 "kubevirt.io/client-go/api/v1"
 )
 
+func writeLog(msg string) {
+	log := logf.Log.WithName("kubevirt-controller-manager")
+	entryLog := log.WithName("VMs")
+	entryLog.Info("@@@@@@@@@@@@@@@@ " + msg)
+}
+
 const (
 	requeueAfterSeconds      = 20
+	requeueAfterSeconds1     = 10
 	requeueAfterFatalSeconds = 180
 	masterLabel              = "node-role.kubevirt.io/master"
 )
@@ -370,10 +379,14 @@ func (m *manager) requeueIfInstancePending(vm *kubevirtapiv1.VirtualMachine, mac
 	// If machine state is still pending, we will return an error to keep the controllers
 	// attempting to update status until it hits a more permanent state. This will ensure
 	// we get a public IP populated more quickly.
+	if !vm.Status.Created {
+		klog.Infof("%s: VM status is not created, returning an error to requeue", machineName)
+		return &machinecontroller.RequeueAfterError{RequeueAfter: requeueAfterSeconds * time.Second}
+	}
+
 	if !vm.Status.Ready {
 		klog.Infof("%s: VM status is not ready, returning an error to requeue", machineName)
 		return &machinecontroller.RequeueAfterError{RequeueAfter: requeueAfterSeconds * time.Second}
 	}
-
 	return nil
 }
