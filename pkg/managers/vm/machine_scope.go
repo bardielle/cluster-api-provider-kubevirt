@@ -8,7 +8,7 @@ import (
 
 	machinecontroller "github.com/openshift/machine-api-operator/pkg/controller/machine"
 
-	kubevirtproviderv1 "github.com/kubevirt/cluster-api-provider-kubevirt/pkg/apis/kubevirtprovider/v1"
+	kubevirtproviderv1 "github.com/kubevirt/cluster-api-provider-kubevirt/pkg/apis/kubevirtprovider/v1alpha1"
 	"github.com/kubevirt/cluster-api-provider-kubevirt/pkg/clients/overkube"
 	"github.com/kubevirt/cluster-api-provider-kubevirt/pkg/clients/underkube"
 	machinev1 "github.com/openshift/machine-api-operator/pkg/apis/machine/v1beta1"
