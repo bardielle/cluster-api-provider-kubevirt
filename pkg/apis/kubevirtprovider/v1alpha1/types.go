@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	kubevirtapiv1 "kubevirt.io/client-go/api/v1"
 )
 
@@ -34,9 +36,29 @@ type KubevirtMachineProviderSpec struct {
 	// ignition    string `json:"pvcName,omitempty"`
 }
 
+func (k KubevirtMachineProviderSpec) GetObjectKind() schema.ObjectKind {
+	panic("implement me")
+}
+
+func (k KubevirtMachineProviderSpec) DeepCopyObject() runtime.Object {
+	panic("implement me")
+}
+
 // KubevirtMachineProviderStatus is the type that will be embedded in a Machine.Status.ProviderStatus field.
 // It contains Kubevirt-specific status information.
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type KubevirtMachineProviderStatus struct {
 	kubevirtapiv1.VirtualMachineStatus
+}
+
+func (k KubevirtMachineProviderStatus) GetObjectKind() schema2.ObjectKind {
+	panic("implement me")
+}
+
+func (k KubevirtMachineProviderStatus) DeepCopyObject() runtime2.Object {
+	panic("implement me")
+}
+
+func init() {
+	SchemeBuilder.Register(&KubevirtMachineProviderSpec{}, &KubevirtMachineProviderStatus{})
 }
